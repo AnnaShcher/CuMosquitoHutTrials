@@ -1,0 +1,47 @@
+﻿Build started 5/10/2015 12:11:28 PM.
+     1>Project "C:\Users\Alexander\Documents\MATLAB\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl.vcxproj" on node 2 (Rebuild target(s)).
+     1>CudaClean:
+         cmd.exe /C "C:\Users\Alexander\AppData\Local\Temp\tmp6f5cacd920a248c480290806fd9d26eb.cmd"
+         "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.0\bin\nvcc.exe" -ccbin "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin"  -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.0\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.0\include"  -G   --keep-dir Debug -maxrregcount=0  --machine 32 --compile   -g   -DWIN32 -D_DEBUG -D_CONSOLE -D_MBCS -Xcompiler "/EHsc /W3 /nologo /Od /Zi /RTC1 /MDd  " -o Debug\CuMosquitoHutTrialsControl.cu.obj "C:\Users\Alexander\Documents\MATLAB\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl.cu" -clean
+         
+         C:\Users\Alexander\Documents\MATLAB\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl>"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.0\bin\nvcc.exe" -ccbin "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin"  -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.0\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.0\include"  -G   --keep-dir Debug -maxrregcount=0  --machine 32 --compile   -g   -DWIN32 -D_DEBUG -D_CONSOLE -D_MBCS -Xcompiler "/EHsc /W3 /nologo /Od /Zi /RTC1 /MDd  " -o Debug\CuMosquitoHutTrialsControl.cu.obj "C:\Users\Alexander\Documents\MATLAB\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl.cu" -clean 
+         CuMosquitoHutTrialsControl.cu
+       AddCudaCompileDeps:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\cl.exe /E /nologo /showIncludes /TP /D__CUDACC__ /DWIN32 /D_DEBUG /D_CONSOLE /D_MBCS /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.0\include" /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.0\bin" /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.0\include" /I. /FIcuda_runtime.h /c C:\Users\Alexander\Documents\MATLAB\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl.cu 
+       CudaBuild:
+         Compiling CUDA source file CuMosquitoHutTrialsControl.cu...
+         cmd.exe /C "C:\Users\Alexander\AppData\Local\Temp\tmpb6d2b350c0a14079a0a4723e59b2704d.cmd"
+         "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.0\bin\nvcc.exe" -gencode=arch=compute_20,code=\"sm_20,compute_20\" --use-local-env --cl-version 2013 -ccbin "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin"  -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.0\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.0\include"  -G   --keep-dir Debug -maxrregcount=0  --machine 32 --compile -cudart static  -g   -DWIN32 -D_DEBUG -D_CONSOLE -D_MBCS -Xcompiler "/EHsc /W3 /nologo /Od /Zi /RTC1 /MDd  " -o Debug\CuMosquitoHutTrialsControl.cu.obj "C:\Users\Alexander\Documents\MATLAB\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl.cu"
+         
+         C:\Users\Alexander\Documents\MATLAB\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl>"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.0\bin\nvcc.exe" -gencode=arch=compute_20,code=\"sm_20,compute_20\" --use-local-env --cl-version 2013 -ccbin "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin"  -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.0\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.0\include"  -G   --keep-dir Debug -maxrregcount=0  --machine 32 --compile -cudart static  -g   -DWIN32 -D_DEBUG -D_CONSOLE -D_MBCS -Xcompiler "/EHsc /W3 /nologo /Od /Zi /RTC1 /MDd  " -o Debug\CuMosquitoHutTrialsControl.cu.obj "C:\Users\Alexander\Documents\MATLAB\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl.cu" 
+     1>C:/Users/Alexander/Documents/MATLAB/CuMosquitoHutTrialsControl/CuMosquitoHutTrialsControl/CuMosquitoHutTrialsControl/CuMosquitoHutTrialsControl.cu(68): warning : variable "d2" was declared but never referenced
+     1>C:/Users/Alexander/Documents/MATLAB/CuMosquitoHutTrialsControl/CuMosquitoHutTrialsControl/CuMosquitoHutTrialsControl/CuMosquitoHutTrialsControl.cu(68): warning : variable "th2" was declared but never referenced
+     1>C:/Users/Alexander/Documents/MATLAB/CuMosquitoHutTrialsControl/CuMosquitoHutTrialsControl/CuMosquitoHutTrialsControl/CuMosquitoHutTrialsControl.cu(70): warning : variable "flight_dist" was declared but never referenced
+     1>C:/Users/Alexander/Documents/MATLAB/CuMosquitoHutTrialsControl/CuMosquitoHutTrialsControl/CuMosquitoHutTrialsControl/CuMosquitoHutTrialsControl.cu(68): warning : variable "d2" was declared but never referenced
+     1>C:/Users/Alexander/Documents/MATLAB/CuMosquitoHutTrialsControl/CuMosquitoHutTrialsControl/CuMosquitoHutTrialsControl/CuMosquitoHutTrialsControl.cu(68): warning : variable "th2" was declared but never referenced
+     1>C:/Users/Alexander/Documents/MATLAB/CuMosquitoHutTrialsControl/CuMosquitoHutTrialsControl/CuMosquitoHutTrialsControl/CuMosquitoHutTrialsControl.cu(70): warning : variable "flight_dist" was declared but never referenced
+         CuMosquitoHutTrialsControl.cu
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.0\include" /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt MATLAB_Interface.cpp
+         MATLAB_Interface.cpp
+     1>c:\users\alexander\documents\matlab\cumosquitohuttrialscontrol\cumosquitohuttrialscontrol\cumosquitohuttrialscontrol\matlab_interface.cpp(154): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+       ResourceCompile:
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\rc.exe /l"0x0409" /nologo /fo"Debug\CuMosquitoHutTrialsControl.res" CuMosquitoHutTrialsControl.rc 
+       Lib:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\Lib.exe /OUT:"C:\Users\Alexander\Documents\MATLAB\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl\Debug\CuMosquitoHutTrialsControl.lib" /NOLOGO Debug\CuMosquitoHutTrialsControl.cu.obj
+         Debug\CuMosquitoHutTrialsControl.res
+         Debug\MATLAB_Interface.obj
+         CuMosquitoHutTrialsControl.vcxproj -> C:\Users\Alexander\Documents\MATLAB\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl\Debug\CuMosquitoHutTrialsControl.lib
+       PostBuildEvent:
+         echo copy "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.0\bin\cudart*.dll" "C:\Users\Alexander\Documents\MATLAB\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl\Debug\"
+         copy "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.0\bin\cudart*.dll" "C:\Users\Alexander\Documents\MATLAB\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl\Debug\"
+         :VCEnd
+         copy "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.0\bin\cudart*.dll" "C:\Users\Alexander\Documents\MATLAB\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl\Debug\"
+         C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.0\bin\cudart32_70.dll
+         C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.0\bin\cudart64_70.dll
+                 2 file(s) copied.
+     1>Done Building Project "C:\Users\Alexander\Documents\MATLAB\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl\CuMosquitoHutTrialsControl.vcxproj" (Rebuild target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:05.37

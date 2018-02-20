@@ -1,0 +1,11 @@
+clear;
+clc;
+exp_params.pnet = 0.9995;
+exp_params.mu = 0.08;
+exp_params.tmax = 9.0;
+exp_params.sig_acc = [1e-5 1e-2];
+exp_params.xlim = [-60 60];
+exp_params.ylim = [-60 60];
+exp_params.eps = 0.2;
+repetitions = 4;
+experiments = 600;

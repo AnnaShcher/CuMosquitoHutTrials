@@ -1,0 +1,7 @@
+*.mat
+*.zip
+
+# use **/ for any sequence of directories (including zero-length sequence). For example a/**/ will ignore all directories a/x, a/x/y, a/x/y/z, etc.
+# a/**/b will ignore all directories a/x/b, a/x/y/b, a/b, a/x/y/z/b, etc. Naturally a/**/b/*.mat will ignore all files having extension .mat located 
+# in such direcories
+# use '!' (without quation marks) to negate the pattern and re-include previously excluded file or directory

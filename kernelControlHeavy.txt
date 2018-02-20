@@ -1,0 +1,235 @@
+	unsigned int id_x = blockIdx.x * blockDim.x + threadIdx.x;
+	unsigned int id_y = blockIdx.y * blockDim.y + threadIdx.y;
+
+	if (id_x >= experiments || id_y >= repetitions) return;
+
+	unsigned int id = id_y * experiments + id_x;
+
+	bool entered, out;
+	int tmax = (int)(3600 * xin.tmax);
+	int tindrs = 0;
+	bool  attr, acc, move;
+	double death, p_attr;
+	double death_rate = xin.mu / 1800 / 34;
+	double d1, th1;
+	double x, y, xnew, ynew, dold, dnew, cold, cnew;
+	double alpha = PI / 2.0;//(1 - alpha) net reflection angle 
+	double theta_hole = PI * (1 - xin.pnet);
+	double sig_acc;
+	bool cond[7] = { false };
+	double a, b, c, Discr, x1, x2, xnew_rfl_1, ynew_rfl_1, xnew_rfl_2, ynew_rfl_2, d_rfl; //axillary variables
+	bool hitted_net, exited_hut, unphys_jump;
+	double a_nrml, a_tgnt, b_tngt, cn_x, cn_y, vn_x, vn_y, drand; //axillary var-s, coefficients for normal and tangent lines of the circle 
+	double prodc, prodv, pc, pv;//axillary for net reflection
+
+	x = xin.xlim[0] + (xin.xlim[1] - xin.xlim[0]) * curand_uniform(&p_rnd_states[id].state_xinit);
+	y = xin.ylim[0] + (xin.ylim[1] - xin.ylim[0]) * curand_uniform(&p_rnd_states[id].state_yinit);
+	dold = sqrt(pow(x, 2.0) + pow(y, 2.0));
+	while (dold < NET_SIZE)
+	{
+		x = xin.xlim[0] + (xin.xlim[1] - xin.xlim[0]) * curand_uniform(&p_rnd_states[id].state_xinit);
+		y = xin.ylim[0] + (xin.ylim[1] - xin.ylim[0]) * curand_uniform(&p_rnd_states[id].state_yinit);
+		dold = sqrt(pow(x, 2.0) + pow(y, 2.0));
+	}
+	cold = pow(e, (-0.5 * pow(dold, 2.0) / pow(STD_A, 2.0)));
+	entered = dold < HUT_SIZE;
+	cond[0] = entered;
+	//variables, conditions
+	//[0      1       2    3   4                5                                6          
+	//[In/Out Trapped Dead Fed taxis/kinesis  inside_net   hitted the net at the previous step
+
+
+	for (int n = 2; n <= FINAL_TIME; n += 2)
+	{
+		//natural death
+		death = curand_uniform_double(&p_rnd_states[id].state_dead);
+		cond[2] = death < death_rate;//select the 'fortune'
+		if (cond[2])
+			break;
+
+		move = !cond[1] && !cond[2];	//not trapped,& not dead
+
+		//candidate step
+		d1 = 0.4 + 0.1* curand_normal_double(&p_rnd_states[id].state_d1);
+		th1 = 2 * PI * curand_uniform(&p_rnd_states[id].state_th1);
+		xnew = x + d1 * cos(th1);
+		ynew = y - d1 * sin(th1);
+
+		//measuring concentration for new position
+		dnew = sqrt(pow(xnew, 2.0) + pow(ynew, 2.0));
+		cnew = pow(e, (-0.5 * pow(dnew, 2.0) / pow(STD_A, 2.0)));
+		sig_acc = xin.sig_acc[0] + xin.sig_acc[1] * dold;//scaling factor for attraction
+
+		p_attr = min(1.0, pow(e, (cnew - cold) / sig_acc));//prob of acceptance
+		attr = (cond[4] || (curand_uniform_double(&p_rnd_states[id].state_attr) < p_attr));//attraction or kinesis
+
+		hitted_net = !cond[5] && dnew < NET_SIZE;
+		exited_hut = cond[0] && dnew > HUT_SIZE && !cond[1];
+
+		//unphysical jump through the net
+		//applying natural parametrization
+		a = pow(x - xnew, 2.0) + pow(y - ynew, 2.0);
+		b = 2.0 * (x * xnew + y * ynew - pow(x, 2.0) - pow(y, 2.0));
+		c = pow(x, 2.0) + pow(y, 2.0) - pow(NET_SIZE, 2.0);
+
+		Discr = pow(b, 2.0) - 4 * a * c;
+		x1 = (-b + sqrt(Discr)) / 2.0 / a;
+		x2 = (-b - sqrt(Discr)) / 2.0 / a;
+
+		unphys_jump = dold >= NET_SIZE && dnew >= NET_SIZE && Discr >= 0 && (x1 >= 0 && x1 <= 1.0 || x2 >= 0 && x2 <= 1.0);
+		acc = !exited_hut && !hitted_net && !unphys_jump;
+
+		//simulating net barrier
+		hitted_net = move && attr && (hitted_net || unphys_jump) && !cond[6];
+
+		a = (ynew - y) / (xnew - x);
+		if (isinf(a))
+			a = 0;
+		b = -x * (ynew - y) / (xnew - x) + y;
+		if (isinf(b))
+			b = y;
+
+		//finding coefficients for a line drawn through points (xnew,ynew) and (x,y)
+		Discr = 4.0 * pow(a * b, 2.0) - 4 * (pow(b, 2.0) - pow(NET_SIZE, 2.0)) * (pow(a, 2.0) + 1.0);
+
+		xnew_rfl_1 = (-2.0 * a * b + sqrt(Discr)) / 2.0 / (pow(a, 2.0) + 1.0);
+		xnew_rfl_2 = (-2.0 * a * b - sqrt(Discr)) / 2.0 / (pow(a, 2.0) + 1.0);
+		ynew_rfl_1 = a * xnew_rfl_1 + b;
+		ynew_rfl_2 = b * xnew_rfl_2 + b;
+		if (hitted_net)//hitting the net at the nearest point
+		{
+			if (pow(xnew_rfl_1 - x, 2.0) + pow(ynew_rfl_1 - y, 2.0) < pow(xnew_rfl_2 - x, 2.0) + pow(ynew_rfl_2 - y, 2.0))
+			{
+				x = xnew_rfl_1;
+				y = ynew_rfl_1;
+			}
+			else
+			{
+				x = xnew_rfl_2;
+				y = ynew_rfl_2;
+			}
+			dold = NET_SIZE + 0.05;
+			cold = CONC_NET_SURF;
+		}
+		
+		
+		//penetration through the hole in the net
+		acc = acc || (atan2(y, x) > -theta_hole && atan2(y, x) < theta_hole && !isinf(atan2(y, x)) && hitted_net);
+
+		//reflection from the net (at the next step after the hit
+		a_nrml = y / x;//line normal to circle through point (x,y)
+		if (isinf(a_nrml) || isnan(a_nrml))
+			a_nrml = 0;
+		a_tgnt = -1 / a_nrml;//tangent line
+		if (isinf(a_tgnt) || isnan(a_tgnt))
+			a_tgnt = 0;
+		b_tngt = y - a_tgnt * x;
+		if (isnan(b_tngt) || isinf(b_tngt))
+			b_tngt = 0;
+
+		//finding coordinates of the point lying in direction tangent to the circle at a distance DD = 0.1 + 0.01 * rand
+		//from the previous position (x,y) 
+		//(finding intersection of y  = a_tngt * x + b_tngt and circle centered (x,y) with radius DD;
+		a = 1.0 + pow(a_tgnt, 2.0);
+		b = 2.0 * a_tgnt * b_tngt - 2.0 * x - 2.0 * a_tgnt * y;
+		c = pow(x, 2.0) + pow(b_tngt, 2.0) - 2.0 * b_tngt * y + pow(y, 2.0) - pow(0.1 + 0.01 * curand_uniform(&p_rnd_states[id].state_d2), 2.0);
+		Discr = pow(b, 2.0) - 4.0 * a * c;
+		
+		//random selection between 2 points lying in opposite directions
+        // at the same distance to (x,y)
+		if (curand_uniform(&p_rnd_states[id].state_d2) < 0.5)
+			xnew_rfl_1 = (-b + sqrt(Discr)) / 2.0 / a;
+		else
+			xnew_rfl_1 = (-b - sqrt(Discr)) / 2.0 / a;
+
+		ynew_rfl_1 = a_tgnt * xnew_rfl_1 + b_tngt;
+
+		drand = 0.3 + 0.1 * curand_uniform(&p_rnd_states[id].state_xinit);//displacement from the pre3vious position (x,y)
+		cn_x = xnew_rfl_1 - x;
+		cn_y = ynew_rfl_1 - y;//tangent vector to point (x,y)
+		vn_x = 2.0 * x;
+		vn_y = 2.0 * y;//normal vector
+		if (cond[4])
+			alpha = 0;//reflection angle after loosing interest
+		prodc = drand * sqrt(pow(cn_x, 2.0) + pow(cn_y, 2.0)) * cos(PI /2.0 - alpha);
+		prodv = drand * sqrt(pow(vn_x, 2.0) + pow(vn_y, 2.0)) * cos(alpha);
+		pc = prodc / (pow(cn_x, 2.0) + pow(cn_y, 2.0));
+		if (isinf(pc) || isnan(pc))
+			pc = 0;
+		pv = prodv / (pow(vn_x, 2.0) + pow(vn_y, 2.0));
+		if (isinf(pv) || isnan(pv))
+			pv = 0;
+		xnew_rfl_2 = x + pv * vn_x + pc * cn_x;
+		ynew_rfl_2 = y + pv * vn_y + pc * cn_y;//new 'reflected' point coordinates
+		d_rfl = sqrt(pow(xnew_rfl_2, 2.0) + pow(ynew_rfl_2, 2.0));
+
+		if (d_rfl < HUT_SIZE && d_rfl > NET_SIZE && cond[6])
+		{
+			x = xnew_rfl_2;
+			y = ynew_rfl_2;
+			dold = sqrt(pow(x, 2.0) + pow(y, 2.0));
+			cold = pow(e, (-0.5 * pow(dold, 2.0) / pow(STD_A, 2.0)));
+		}
+		cond[6] = 0;//mark that reflection was done
+		//cond[6] = move && attr && hitted_net && !acc;
+		if (hitted_net && !acc)
+		{
+			cond[6] = 1;
+		}
+		//hut barrier reflection
+		a = (ynew - y) / (xnew - x);
+		if (isinf(a) || isnan(a))
+			a = 0;
+		b = -x * (ynew - y) / (xnew - x) + y;
+		if (isinf(b) || isnan(b))
+			b = 0;
+		Discr = 4.0 * pow(a * b, 2.0) - 4.0 * (pow(b, 2.0) - pow(HUT_SIZE, 2.0)) * (pow(a, 2.0) + 1.0);
+		xnew_rfl_1 = (-2.0 * a * b - sqrt(Discr)) / 2.0 / (pow(a, 2.0) + 1.0);
+		xnew_rfl_2 = (-2.0 * a * b + sqrt(Discr)) / 2.0 / (pow(a, 2.0) + 1.0);
+		ynew_rfl_1 = a * xnew_rfl_1 + b;
+		ynew_rfl_2 = a * xnew_rfl_2 + b;
+		if (move && attr && exited_hut)
+		{
+			if (pow(xnew_rfl_1 - x, 2.0) + pow(ynew_rfl_1 - y, 2.0) < pow(xnew_rfl_2 - x, 2.0) + pow(ynew_rfl_2 - y, 2.0))
+			{
+				x = xnew_rfl_1;
+				y = ynew_rfl_1;
+			}
+			else
+			{
+				x = xnew_rfl_2;
+				y = ynew_rfl_2;
+			}
+			dold = HUT_SIZE - 0.05;
+			cold = pow(e, (-0.5 * pow(dold, 2.0) / pow(STD_A, 2.0)));
+		}
+		//penetrating through the window trap
+		acc = acc || exited_hut && curand_uniform_double(&p_rnd_states[id].state_active) < xin.phut;
+
+		if (move && attr && acc)
+		{
+			x = xnew;
+			y = ynew;
+			cold = cnew; //and resp. site & conc. values
+			dold = dnew;
+		}
+
+		out = !cond[0];
+		cond[0] = cond[0] || (dold <= HUT_SIZE);//inside
+		entered = out && cond[0];
+		cond[1] = cond[1] || (cond[0] && (dold >= HUT_SIZE));//mark trapped mosquitoes
+		cond[3] = cond[3] || (dold < xin.eps);
+		cond[5] = dold < NET_SIZE;
+		if (cond[0] && !cond[2] && !cond[1])
+			tindrs = tindrs + 2;//increment time spent indoors
+		cond[4] = cond[4] || (tindrs >= tmax) || cond[3];
+
+	}
+
+	death = curand_uniform_double(&p_rnd_states[id].state_dead);
+	cond[2] = cond[2] || (death < 24 * xin.mu / 34);	//select the 'fortune'
+	in[id] = cond[0];
+	dead[id] = cond[0] && cond[2];
+	trap[id] = cond[1];
+	fed[id] = cond[3];
+	unf_dead[id] = cond[2] && !cond[3];

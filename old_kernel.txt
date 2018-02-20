@@ -1,0 +1,112 @@
+__global__ void hut_exp_kernel(char* in, char* dead, char* trap, char* fed, char* unf_dead,
+	const hut_exp_control xin,
+	RandomGeneratorState* p_rnd_states,
+	uint32_t repetitions, uint32_t experiments)
+{
+	unsigned int id_x = blockIdx.x * blockDim.x + threadIdx.x;
+	unsigned int id_y = blockIdx.y * blockDim.y + threadIdx.y;
+
+	if (id_x >= experiments || id_y >= repetitions) return;
+
+	unsigned int id = id_y * experiments + id_x;
+
+	bool entered, out;
+	int tmax = (int)(3600 * xin.tmax);
+	int tindrs = 0;
+	bool  attr, acc, move;
+	double death, p_attr;
+	double death_rate = xin.mu / 1800 / 34;
+	double d1, d2, th1, th2;
+	double x, y, xnew, ynew, dold, dnew, cold, cnew;
+	double flight_dist[2] = { 0.4, 1.1 };
+	double sig_acc;
+	bool cond[6] = { false };
+
+	x = xin.xlim[0] + (xin.xlim[1] - xin.xlim[0]) * curand_uniform(&p_rnd_states[id].state_xinit);
+	y = xin.ylim[0] + (xin.ylim[1] - xin.ylim[0]) * curand_uniform(&p_rnd_states[id].state_yinit);
+	dold = sqrt(pow(x, 2.0) + pow(y, 2.0));
+	while (dold < NET_SIZE)
+	{
+		x = xin.xlim[0] + (xin.xlim[1] - xin.xlim[0]) * curand_uniform(&p_rnd_states[id].state_xinit);
+		y = xin.ylim[0] + (xin.ylim[1] - xin.ylim[0]) * curand_uniform(&p_rnd_states[id].state_yinit);
+		dold = sqrt(pow(x, 2.0) + pow(y, 2.0));
+	}
+	cold = pow(e, (-0.5 * pow(dold, 2.0) / pow(STD_A, 2.0)));
+	entered = dold < HUT_SIZE;
+	cond[0] = entered;
+	//variables, conditions
+	//[0      1       2    3   4                5          
+	//[In/Out Trapped Dead Fed taxis/kinesis  inside_net  
+
+
+	for (int n = 2; n <= FINAL_TIME; n += 2)
+	{
+		//natural death
+		death = curand_uniform_double(&p_rnd_states[id].state_dead);
+		cond[2] = death < death_rate;//select the 'fortune'
+		if (cond[2])
+			break;
+
+		move = !cond[1] && !cond[2];	//not trapped,& not dead, & not resting
+
+		//candidate step
+		d1 = 0.8* curand_normal_double(&p_rnd_states[id].state_d1);
+		th1 = 2 * PI * curand_uniform(&p_rnd_states[id].state_th1);
+		xnew = x + d1 * cos(th1);
+		ynew = y + d1 * sin(th1);
+
+		//measuring concentration for new position
+		dnew = sqrt(pow(xnew, 2.0) + pow(ynew, 2.0));
+		cnew = pow(e, (-0.5 * pow(dnew, 2.0) / pow(STD_A, 2.0)));
+		sig_acc = xin.sig_acc[0] + tan(xin.sig_acc[1]) * dold;//scaling factor for attraction
+
+		p_attr = min(1.0, pow(e, (cnew - cold) / sig_acc));//prob of acceptance
+		attr = (cond[4] || (curand_uniform_double(&p_rnd_states[id].state_attr) < p_attr));//attraction or kinesis
+
+		if (!cond[5] && dnew <= NET_SIZE)
+		{
+			acc = curand_uniform_double(&p_rnd_states[id].state_acc) < 1.0 - xin.pnet;
+			if (move && attr && !acc)
+			{
+				x = NET_SIZE + EPS;
+				y = 0;//hiting the sufice
+				cold = CONC_NET_SURF;
+				dold = NET_SIZE + EPS;
+			}
+		}
+
+		else if (cond[0] && dnew > HUT_SIZE)
+			acc = curand_uniform_double(&p_rnd_states[id].state_active) < xin.phut;
+		else
+			acc = true;//taking into account net barrier
+		if (move && attr && acc)
+		{
+			x = xnew;
+			y = ynew;
+			cold = cnew; //and resp. site & conc. values
+			dold = dnew;
+		}
+
+		out = !cond[0];
+		cond[0] = cond[0] || (dold <= HUT_SIZE);//inside
+		entered = out && cond[0];
+		cond[1] = cond[1] || (cond[0] && (dold >= HUT_SIZE));//mark trapped mosquitoes
+		cond[3] = cond[3] || (dold < xin.eps);
+		cond[5] = dold < NET_SIZE;
+		if (cond[0] && !cond[2] && !cond[1])
+			tindrs = tindrs + 2;//increment time spent indoors
+		cond[4] = cond[4] || (tindrs >= tmax) || cond[3];
+
+	}
+
+	death = curand_uniform_double(&p_rnd_states[id].state_dead);
+	cond[2] = cond[2] || (death < 24 * xin.mu / 34);	//select the 'fortune'
+	in[id] = cond[0];
+	dead[id] = cond[0] && cond[2];
+	trap[id] = cond[1];
+	fed[id] = cond[3];
+	unf_dead[id] = cond[2] && !cond[3];
+
+	/* Copy state back to global memory */
+	/* Store results */
+}
