@@ -1,14 +1,19 @@
-**/*.mat
-**/*.zip
-**/*.png
-**/*.fig
-**/*.asv
-**/*.mexw64
-**/~*
-**/Debug/
-**/Release/
-**/x64
-.vs/
+*.mat
+*.zip
+*.png
+*.fig
+*.mexw64
+*.pdb
+*.suo
+*.VC.db
+*.VC.opendb
+~*
+Debug/
+Release/
+x64/
+**/x64/**
+**/Release/**
+**/Debug/**
 
 
 
